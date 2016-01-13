@@ -7,10 +7,18 @@
 //
 
 #import "ViewController.h"
-
+#import "UIImageView+LBBlurredImage.h"
+//布局Masonry,最常用的布局框架
+#import "Masonry.h"
+#import "Manager.h"
 @interface ViewController ()
-@property (nonatomic,strong) UIView *subView;
-@property (nonatomic,strong) UIView *subView2;
+
+@property (strong, nonatomic)   UIView *subView2;
+@property (strong, nonatomic)   UIView *subView;
+- (IBAction)gotoSubView2:(id)sender;
+- (IBAction)backSubView:(id)sender;
+ 
+
 @property (nonatomic,assign) int index;
 @end
 
@@ -18,55 +26,67 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    UIView *view = [[UIView alloc]initWithFrame:self.view.frame];
-    view.backgroundColor = [UIColor lightGrayColor];
-    view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-    button.frame = CGRectMake(0, 0, 100 , 60);
-    button.backgroundColor =[UIColor redColor];
-    [button setTitle:@"返回上一个界面" forState:UIControlStateNormal];
     
-    [view addSubview:button];
-    self.subView=view;
-    [self.view addSubview:view];
-    NSLog(@"%lu",(unsigned long)[self.view.subviews count]);
-    [button addTarget:self action:@selector(exchange) forControlEvents:UIControlEventTouchUpInside];
-    // Do any additional setup after loading the view, typically from a nib.
-    [self addView];
-}
-- (void)addView{
-    UIView *view = [[UIView alloc]initWithFrame:self.view.frame];
-    view.backgroundColor = [UIColor blueColor];
-    view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-    button.frame = CGRectMake(0, 0, 100 , 60);
-    button.backgroundColor =[UIColor redColor];
-    [button setTitle:@"返回上一个界面" forState:UIControlStateNormal];
-    [view addSubview:button];
-    self.subView2 =view;
-    [self.view insertSubview:view aboveSubview:self.subView];
-     //[self.view addSubview:view];
-    NSLog(@"%lu",(unsigned long)[self.view.subviews count]);
-    [button addTarget:self action:@selector(clickButtonToPrefixView) forControlEvents:UIControlEventTouchUpInside];
+    self.subView = [[UIView alloc] init];
+    [self.view addSubview:self.subView];
+    self.subView.backgroundColor = [UIColor  yellowColor];
+    [self.subView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.mas_equalTo(UIEdgeInsetsMake(5, 5, 5, 5));
+        
+    }];
+    UIButton *button = [[UIButton alloc]init];
+    [button setTitle:@"弹出text" forState:UIControlStateNormal];
+    [self.subView addSubview:button];
+    [button mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.left.mas_equalTo(5);
+        make.right.mas_equalTo(-5);
+        make.height.mas_equalTo(30);
+    }];
+    button.backgroundColor = [UIColor redColor];
+    [button addTarget:self action:@selector(gotoSubView2:) forControlEvents:UIControlEventTouchUpInside];
+    
 }
 
-- (void)clickButtonToNextView:(int) index {
-      [self addView];
-    //[self.view exchangeSubviewAtIndex:1 withSubviewAtIndex:3];
-   // [self viewWillAppear:YES];
-    NSLog(@"%lu",(unsigned long)[self.view.subviews count]);
-   // [self.view setNeedsLayout];
-  //  [self.view layoutSubviews];
-    [self.view setNeedsDisplay];
+- (void)gotoSubView2:(id)sender {
+    if (!self.subView2) {
+        self.subView2 = [[UIView alloc] init];
+        self.subView2.backgroundColor= [UIColor lightGrayColor];
+        [self.view addSubview:self.subView2];
+        [self.view insertSubview:self.subView2 atIndex:0];
+        [self.subView2 mas_makeConstraints:^(MASConstraintMaker *make) {
+         //   make.centerX.centerY.mas_equalTo(0);
+          //  make.height.width.mas_equalTo(200);
+            make.edges.mas_equalTo(UIEdgeInsetsMake(20, 20, 20, 20) );
+         
+        }];
+        UIButton *button = [[UIButton alloc]init];
+        [button setTitle:@"弹出text" forState:UIControlStateNormal];
+        [self.subView2 addSubview:button];
+        [button mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.left.mas_equalTo(5);
+            make.right.mas_equalTo(-5);
+            make.height.mas_equalTo(30);
+        }];
+        button.backgroundColor = [UIColor blueColor];
+        [button addTarget:self action:@selector(backSubView:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    //增加旋转特性,已经集成为一个小小的框架,随意调用,更改源码
+    [Manager AnimationBle:self.subView2];
+    //将subviw放在subview2之上
+    [self.view insertSubview:self.subView2 aboveSubview:self.subView];
+
+    NSLog(@"%f",self.subView2.frame.size.width);
+}
+
+- (void)backSubView:(id)sender {
     
-    NSLog(@"执行");
-}
-   // Dispose of any resources that can be recreated.
-- (void) exchange{
-    [self.view bringSubviewToFront:self.subView2];
-}
-- (void)clickButtonToPrefixView{
+    
     [self.view bringSubviewToFront:self.subView];
-    [self.view setNeedsDisplay];
+    //NSLog(@"%f",self.subView2.frame.size.width);
+    // [self.subView2 removeFromSuperview];
+    
+    
+    //self.subView2= nil;
+   // [self.view setNeedsDisplay];
 }
 @end

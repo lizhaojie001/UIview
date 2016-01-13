@@ -7,15 +7,53 @@
 //
 
 #import "AppDelegate.h"
-
+#import "ViewController.h"
+#import <dlfcn.h>
 @interface AppDelegate ()
 
 @end
 
 @implementation AppDelegate
 
+- (void)loadReveal
+{
+    if (NSClassFromString(@"IBARevealLoader") == nil)
+    {
+        NSString *revealLibName = @"libReveal";
+        NSString *revealLibExtension = @"dylib";
+        NSString *error;
+        NSString *dyLibPath = [[NSBundle mainBundle] pathForResource:revealLibName ofType:revealLibExtension];
+        
+        if (dyLibPath != nil)
+        {
+            NSLog(@"Loading dynamic library: %@", dyLibPath);
+            void *revealLib = dlopen([dyLibPath cStringUsingEncoding:NSUTF8StringEncoding], RTLD_NOW);
+            
+            if (revealLib == NULL)
+            {
+                error = [NSString stringWithUTF8String:dlerror()];
+            }
+        }
+        else
+        {
+            error = @"File not found.";
+        }
+        
+        if (error != nil)
+        {
+            NSString *message = [NSString stringWithFormat:@"%@.%@ failed to load with error: %@", revealLibName, revealLibExtension, error];
+            [[[UIAlertView alloc] initWithTitle:@"Reveal library could not be loaded" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+    }
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    self.window= [[UIWindow alloc]initWithFrame:[UIScreen mainScreen].bounds];
+    self.window.rootViewController = [[ViewController alloc]init];
+    
+    [self.window makeKeyAndVisible];
+    
+    [self loadReveal];
     // Override point for customization after application launch.
     return YES;
 }
